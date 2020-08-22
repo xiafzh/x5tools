@@ -46,16 +46,17 @@ class CPlayerInfoQuerier:
         else:
             qres, qdata = my_conn.execute("select * from %s where %s=%d" % (table_name, key_data[0][0], value))
         
+        print(qdata)
         res_data = []
-        for key in qdata:
-            for value in key:
-                print(type(value), value)
+        for item in qdata:
+            item_data = []
+            for value in item:
+                #print(type(value), value)
                 if type(value) == bytes:
-                    res_data.append(''.join(['%02X' % b for b in value]))
-                elif type(value) == datetime:
-                    print("datetime", value)
+                    item_data.append(''.join(['%02X' % b for b in value]))
                 else:
-                    res_data.append(value)
+                    item_data.append(value)
+            res_data.append(item_data)
         #print(res_data)
         
         my_conn.close()

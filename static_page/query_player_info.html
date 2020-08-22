@@ -8,7 +8,7 @@
 <a class="easyui-linkbutton" onclick="query_player_info()" data_option="iconCls:search">查询</a>
 
 <br/>
-<div id="player_data" class="easyui-propertygrid" data-options="showGroup:false" style="height:700px"></div>
+<div id="player_data" style="height:700px"></div>
 
 <script>
     $(function(){	
@@ -87,11 +87,18 @@
 	}
 	
 	function SelectColumnName(new_v, old_v){
-		RefreshPlayerInfo()
+		//console.log("column name change" + new_v)
+		//console.log(localStorage.getItem("player_info_table"))
+		//console.log($("#table_name").combobox("getValue"))
+		if (localStorage.getItem("player_info_table") == $("#table_name").combobox("getValue"))
+			RefreshPlayerInfo()
+		else
+			query_player_info()
 	}
 	
 	// 查询数据库的回调
 	function OnLoadDatabaseName(data){
+		//console.log(data)
 		if (data["res_code"] != 0){
 			alert(data["res_code"]);
 			return;
@@ -100,7 +107,7 @@
 		var is_set = false
         var combo_data = new Array();
 		for (let i in data["res_data"]){
-			var name = data["res_data"][i]
+			var name = data["res_data"]	[i]
 			
 			if (name == "star_game"){
 				combo_data.push({"id":name,"text":name,"selected":true})
@@ -157,46 +164,64 @@
 		
 		$("#column_name").combotree("clear")
 		$("#column_name").combotree("loadData", combo_data)
-		
-		
-		query_player_info()
 	}
 	
 	function RefreshPlayerInfo(){
-		var columns = $("#column_name").combotree("getValues")
 		var data = JSON.parse(localStorage.getItem("player_info"))
+		var columns_arr = JSON.parse(localStorage.getItem("player_info_column"))
+		var columns = $("#column_name").combotree("getValues")	
 		
-		
-		var grid_data = new Array()
-		var col_index = 0;
-		//console.log(columns)
-		//console.log(data)
-		for (var index in data){
-			//console.log(data[index]['name'] + columns[col_index])
-			if (data[index]['name'] == columns[col_index]){
-				grid_data.push(data[index])
-				++col_index
+		//console.log("column_arr")
+		//console.log(localStorage.getItem("player_info_column"))
+		if (data.length <= 1){
+			// propertygrid
+			$("#player_data").propertygrid({showGroup:false,})
+			var grid_data = new Array()
+			for (var i = 0; i < columns.length; i++){
+				//console.log(columns_arr[columns[i]])
+				grid_data.push({ 'name':columns[i], 'value':data[0][columns_arr[columns[i]]]})
 			}
+			
+			//console.log(grid_data)
+			$("#player_data").propertygrid("loadData", grid_data)			
 		}
-		console.log(grid_data)
-		$("#player_data").propertygrid("loadData", grid_data)
+		else{
+			// datagrid			
+			var grid_data = new Array()
+			var col_index = 0;
+			//console.log(columns)
+			//console.log(data)
+			var grid_data = new Array()
+			for (var j = 0; j < data.length; ++j){	
+				for (var i = 0; i < columns.length; i++){
+					grid_data.push({ 'name':columns[i], 'value':data[j][columns_arr[columns[i]]]})
+				}
+			}
+			
+			$("#player_data").propertygrid("loadData", grid_data)
+		}
+		
 	}
 	
 	// 查询玩家信息的回调
 	function OnQueryPlayerInfo(data){
+		//console.log(data)
 		if (data["res_code"] != 0){
 			alert(data["res_code"]);
 			return;
 		}
-			
-		var columns = $("#column_name").combotree("getValues")		
-		var grid_data = new Array()
-		for (var i=0; i < columns.length; i++){
-			var row = { 'name':columns[i], 'value':data["res_data"][i]}
-			grid_data.push(row)
+		
+		
+		var columns = $("#column_name").combotree("getValues")
+		var columns_arr = {}
+		for (var key in columns){
+		
+			columns_arr[columns[key]] = key
 		}
 		
-		$("#player_data").propertygrid("loadData", grid_data)
-		localStorage.setItem("player_info", JSON.stringify(grid_data))
+		localStorage.setItem("player_info_table", $("#table_name").combobox("getValue"))
+		localStorage.setItem("player_info", JSON.stringify(data['res_data']))
+		localStorage.setItem("player_info_column", JSON.stringify(columns_arr))
+		RefreshPlayerInfo()
 	}
 </script>

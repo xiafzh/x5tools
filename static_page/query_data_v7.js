@@ -11,8 +11,14 @@ function query_data(data, cb_fun){
 		var XMLHttpReq = xhr;
 		if (XMLHttpReq.readyState == 4) {
 			if (XMLHttpReq.status == 200) {                
-			var data = XMLHttpReq.responseText;
-				var json = JSON.parse(data);
+				var data = XMLHttpReq.responseText;
+				var json;
+				try{
+					json = JSON.parse(data)
+				}
+				catch(exception){
+					console.log(data)
+				}
 				cb_fun(json);
 			}else if(XMLHttpReq.status == 100){
 			}else if(XMLHttpReq.status == 300){
