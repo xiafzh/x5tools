@@ -1,0 +1,202 @@
+
+<input id="db_host" class="easyui-textbox" value="172.17.100.47" style="width:100" data-options="label:'IP:',labelPosition:'left',labelWidth:30" >
+<input id="database_name" class="easyui-combobox" style="width:250px;" data-options="label:'数据库:',labelPosition:'left',labelWidth:60,onChange:SelectDababaseName, valueField:'id', textField:'text'"></input>
+<select id="table_name" class="easyui-combobox" style="width:350px;" data-options="label:'数据表:',labelPosition:'left',labelWidth:60,valueField:'id', textField:'text', onChange:SelectTableName"></select>
+<input id="column_name" class="easyui-combotree" style="width:250px;" data-options="label:'数据列:',labelPosition:'left',labelWidth:60,multiple:true,onChange:SelectColumnName" style="width:10%">
+<input id="query_qq" class="easyui-textbox" value="3520190515" style="width:180" data-options="label:'QQ:',labelPosition:'left',labelWidth:40">
+
+<a class="easyui-linkbutton" onclick="query_player_info()" data_option="iconCls:search">查询</a>
+
+<br/>
+<div id="player_data" class="easyui-propertygrid" data-options="showGroup:false" style="height:700px"></div>
+
+<script>
+    $(function(){	
+		var host_v = document.getElementById("db_host").value
+		if (host_v == "") {
+			host_v = "172.17.100.47";
+			document.getElementById("db_host").value = host_v;
+		}
+
+		var post_data = {
+			"opt_type":10002,
+			"sub_type":1,
+			"host":host_v,
+        };
+        query_data(post_data, OnLoadDatabaseName);
+    })
+
+	function LoadTableName(){	
+		var host_v = document.getElementById("db_host").value;
+		var db_name = $("#database_name").combobox("getValue");
+		var post_data = {
+			"opt_type":10002,
+			"sub_type":2,
+			"host":host_v,
+			"database":db_name,
+        };
+        query_data(post_data, OnLoadTableName);
+	}
+	
+	function LoadTableColumn(){
+		var host_v = document.getElementById("db_host").value;
+		var db_name = $("#database_name").combobox("getValue");
+		var table_name = $("#table_name").combobox("getValue");
+		
+		var post_data = {
+			"opt_type":10002,
+			"sub_type":3,
+			"host":host_v,
+			"database":db_name,
+			"table_name":table_name,
+        };
+        query_data(post_data, OnLoadTableColumn);
+	}
+
+	function query_player_info(){	
+		var qq = document.getElementById("query_qq").value
+		if (qq == ""){
+			alert("QQ不能为空")
+			return;
+		}	
+		
+		var host_v = document.getElementById("db_host").value;
+		var db_name = $("#database_name").combobox("getValue");
+		var table_name = $("#table_name").combobox("getValue");
+		var columns = $("#column_name").combotree("getValues")		
+		
+		var post_data = {
+			"opt_type":10001,
+			"sub_type":1,
+			"host":host_v,
+			"database":db_name,
+			"table_name":table_name,
+			"qq" : qq,
+			"columns":columns
+        };
+        query_data(post_data, OnQueryPlayerInfo);
+	}
+	
+	// 数据库名选择
+	function SelectDababaseName(new_v, old_v){
+		LoadTableName()
+	}
+
+	function SelectTableName(new_v, old_v){
+		LoadTableColumn()
+	}
+	
+	function SelectColumnName(new_v, old_v){
+		RefreshPlayerInfo()
+	}
+	
+	// 查询数据库的回调
+	function OnLoadDatabaseName(data){
+		if (data["res_code"] != 0){
+			alert(data["res_code"]);
+			return;
+		}
+		
+		var is_set = false
+        var combo_data = new Array();
+		for (let i in data["res_data"]){
+			var name = data["res_data"][i]
+			
+			if (name == "star_game"){
+				combo_data.push({"id":name,"text":name,"selected":true})
+				is_set = true
+			}
+			else{
+				combo_data.push({"id":name,"text":name})
+			}			
+		}
+		if (is_set != true){
+			combo_data[0]["selected"] = true;
+		}
+		$("#database_name").combobox("loadData", combo_data)
+		LoadTableName()
+	}
+	
+	// 查询数据表的回调
+	function OnLoadTableName(data){
+		//console.log(data)
+		if (data["res_code"] != 0){
+			alert(data["res_code"]);
+			return;
+		}
+		
+		var is_set = false
+		var combo_data = new Array()
+		for (let i in data["res_data"]){
+			var name = data["res_data"][i]
+			if (name == "charinfo"){
+				combo_data.push({"id":name,"text":name,"selected":true})
+				is_set = true
+			}
+			else{
+				combo_data.push({"id":name,"text":name})
+			}	
+		}
+		if (is_set != true){
+			combo_data[0]["selected"] = true;
+		}
+		$("#table_name").combobox("loadData", combo_data);
+
+		LoadTableColumn()
+	}
+
+	// 查询数据列的回调
+	function OnLoadTableColumn(data){
+		//console.log(data)
+		
+		var combo_data = new Array()
+		for (let i in data["res_data"]){
+			var name = data["res_data"][i]
+			combo_data.push({"id":name,"text":name,"checked":true})
+		}
+		
+		$("#column_name").combotree("clear")
+		$("#column_name").combotree("loadData", combo_data)
+		
+		
+		query_player_info()
+	}
+	
+	function RefreshPlayerInfo(){
+		var columns = $("#column_name").combotree("getValues")
+		var data = JSON.parse(localStorage.getItem("player_info"))
+		
+		
+		var grid_data = new Array()
+		var col_index = 0;
+		//console.log(columns)
+		//console.log(data)
+		for (var index in data){
+			//console.log(data[index]['name'] + columns[col_index])
+			if (data[index]['name'] == columns[col_index]){
+				grid_data.push(data[index])
+				++col_index
+			}
+		}
+		console.log(grid_data)
+		$("#player_data").propertygrid("loadData", grid_data)
+	}
+	
+	// 查询玩家信息的回调
+	function OnQueryPlayerInfo(data){
+		if (data["res_code"] != 0){
+			alert(data["res_code"]);
+			return;
+		}
+			
+		var columns = $("#column_name").combotree("getValues")		
+		var grid_data = new Array()
+		for (var i=0; i < columns.length; i++){
+			var row = { 'name':columns[i], 'value':data["res_data"][i]}
+			grid_data.push(row)
+		}
+		
+		$("#player_data").propertygrid("loadData", grid_data)
+		localStorage.setItem("player_info", JSON.stringify(grid_data))
+	}
+</script>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="./easyui/themes/default/easyui.css">
+    <link rel="stylesheet" type="text/css" href="./easyui/themes/icon.css">
+    <link rel="stylesheet" type="text/css" href="./easyui/demo/demo.css">    
+    <script type="text/javascript" src="./easyui/jquery.min.js"></script>
+    <script type="text/javascript" src="./easyui/jquery.easyui.min.js"></script>
+    <script type="text/javascript" src="./query_data_v4.js"></script>
+</head>
+<body>
+    <div id="main_div" class="easyui-layout" data-options="fit:true">
+        <!--顶部说明-->
+        <div data-options="region:'north',split:true, collapsible:false" style="height:100px;">
+            <h1>欢迎来到我的世界</h1>
+        </div>
+        <!--左侧菜单-->
+        <div data-options="region:'west',title:'工具目录',split:true" style="width:240px;height:700;">
+            <div id="left_panel" class="easyui-accordion" >
+                <div title="常用工具" >
+                    <div class="easyui-tree">
+                        <li><span><a href="#" onclick="query_player_page()">查询玩家</a></span></li>
+                        <li><span><a href="#" onclick="submit_click()">我是个测试按钮，谁来谁点</a></span></li>
+                        <li><span><a href="#" onclick="error()">我也不知道能不能用</a></span></li>
+                    </div>
+                </div>
+                <div title="第二部队">
+                
+                </div>
+            </div>
+        </div>
+        <!--内容-->
+        <div data-options="region:'center',title:' '" style="padding:5px;">
+            <div id="pagetabs" class="easyui-tabs" data-options="tabPosition:'bottom',fit:true,border:false,plain:false">
+                <div title="后台首页" href="_content.html" data-options="cache:true">
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+    $(function(){
+      
+    })
+    
+    function query_player_page(){
+        if($('#pagetabs').tabs('exists',"玩家数据查询")){
+            $('#pagetabs').tabs('select',"玩家数据查询")
+            return
+        }
+        $('#pagetabs').tabs('add', {title:"玩家数据查询"
+			, href:"query_player_info.html"
+			, closable:true
+        })
+    }
+
+    function submit_click(){
+        var post_data = {
+			"opt_type":10001,
+			"sub_type":1,
+			"host":"172.17.100.47",
+			"database":"star_game",
+			"table_name":"charinfo",
+			"qq":3520190515,
+        };
+        query_data(post_data, OnSubmit_click);
+    }
+    function OnSubmit_click(data){
+        //document.getElementById("Output").value = data["res_data"];
+		console.log(data)
+    }
+	
+	function error(){
+		if($('#pagetabs').tabs('exists',"错误页面")){
+            $('#pagetabs').tabs('select',"错误页面")
+            return
+        }
+        $('#pagetabs').tabs('add', {title:"错误页面"
+			, href:"error/404.html"
+			, closable:true
+        })
+	}
+    </script>
+</body>
+
+</html>

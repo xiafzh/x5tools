@@ -1,0 +1,89 @@
+
+<div id="query_pstid" class="easyui-panel" title="查询pstid"
+	style="width:350px;height:250px;padding:10px;background:#fafafa;"
+	data-options="iconCls:'icon-search',collapsible:true">
+	<input id="pstid_host" class="easyui-combobox" data-options="label:'Host:',labelPosition:'top',width:300,valueField:'id',textField:'text'" /><br/>
+	<input id="qq" class="easyui-textbox" data-options="label:'QQ:',labelPosition:'top',width:300, buttonText:'查询'
+		, prompt:'请输入要查询的QQ', buttonIcon:'icon-search', onClickButton:SearchPstid" />
+	
+	<input id="pstid" class="easyui-textbox" data-options="label:'PSTID:',labelPosition:'top',width:300,readonly:true,disabled:true" />
+</div>
+
+<div id="query_serverid" class="easyui-panel" title="ServerID转换"
+	style="width:350px;height:320px;padding:10px;background:#fafafa;"
+	data-options="iconCls:'icon-search',collapsible:true">
+	<input id="server_globalid" class="easyui-textbox" data-options="label:'ServerGlobalID:',labelPosition:'top',width:300,valueField:'id',textField:'text',
+		buttonText:'转换', prompt:'请输入要转换的服务器ID', buttonIcon:'icon-search', onClickButton:TransGlobalIDToServerID" />
+	
+	<input id="serverid" class="easyui-textbox" data-options="label:'ServerID:',labelPosition:'top',width:300,readonly:true,disabled:true" />
+	<input id="server_type" class="easyui-textbox" data-options="label:'ServerType:',labelPosition:'top',width:300,readonly:true,disabled:true" />
+	<input id="groupid" class="easyui-textbox" data-options="label:'GroupID:',labelPosition:'top',width:300,readonly:true,disabled:true" />
+</div>
+
+
+<script>
+	$(function(){
+		$("#pstid_host").combobox({
+			data:[{"id":1,"text":"172.17.100.47","selected":true},
+				{"id":2,"text":"172.17.100.74"},
+				{"id":3,"text":"172.17.100.105"},
+			],
+		})
+	})
+
+	function SearchPstid(){
+		var host_v = $("#pstid_host").combobox("getValue");
+		var qq = document.getElementById("qq").value;
+		console.log(host_v)
+		console.log(qq)
+		if (host_v == "" || qq == ""){
+			alert("输入不能为空")
+			return
+		}
+		
+		var post_data = {
+			"opt_type":10001,
+			"sub_type":2,
+			"host":host_v,
+			"qq" : qq,
+        };
+        query_data(post_data, OnSearchPstid);
+	}
+	
+	function OnSearchPstid(data){
+		console.log(data)
+		if(data["res_code"] != 0){
+			alert(data["res_code"])
+			return
+		}
+		
+		$("#pstid").textbox("setValue", data["res_data"])
+	}
+	
+	function TransGlobalIDToServerID(){
+		var server_gid = document.getElementById("server_globalid").value;
+		if (server_gid == ""){
+			alert("输入不能为空")
+			return
+		}
+		
+		var post_data = {
+			"opt_type":10000,
+			"sub_type":1,
+			"server_gid":server_gid,
+        };
+        query_data(post_data, OnTransGlobalIDToServerID);
+	}
+	
+	function OnTransGlobalIDToServerID(data){
+		console.log(data)
+		if(data["res_code"] != 0){
+			alert(data["res_code"])
+			return
+		}
+		
+		$("#serverid").textbox("setValue", data["res_data"]['server_id'])
+		$("#groupid").textbox("setValue", data["res_data"]['group_id'])
+		$("#server_type").textbox("setValue", data["res_data"]['server_type'])
+	}
+</script>
